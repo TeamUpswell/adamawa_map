@@ -161,22 +161,23 @@
         function handleMarkerClick(locationName, locationCategory, locationId = null, locationLga = '', locationAddress = '', latitude = 0, longitude = 0) {
             console.log(`Marker clicked: ${locationName}, Category: ${locationCategory}, ID: ${locationId}`);
             
-            // Concatenate ID and Name for the event label
-            const eventLabel = `${locationId} - ${locationName}`;
-            
-            // Prepare event parameters with additional variables
+            // Prepare event parameters with specific pharmacy_name or healthcenter_name
             const eventParams = {
                 'event_category': 'Map Interaction',
                 'event_action': 'marker_click',
-                'event_label': eventLabel, // Combined ID and Name
+                'pharmacy_name': locationCategory === 'pharmacy' ? locationName : undefined, // Specific parameter for pharmacies
+                'healthcenter_name': locationCategory === 'healthcenter' ? locationName : undefined, // Specific for health centers
+                'location_type': locationCategory, // 'pharmacy' or 'healthcenter'
                 'value': 1,
-                // Custom Dimensions (replace 'dimension1', etc., with actual indices from GA)
                 'dimension1': locationLga,
                 'dimension2': locationAddress,
                 'dimension3': latitude.toString(),
                 'dimension4': longitude.toString()
             };
             
+            // Remove undefined properties to avoid sending them to GA4
+            Object.keys(eventParams).forEach(key => eventParams[key] === undefined && delete eventParams[key]);
+
             // Send event to Google Analytics
             gtag('event', 'marker_click', eventParams);
         }
@@ -200,7 +201,10 @@
                     'dimension3': latitude.toString(),
                     'dimension4': longitude.toString()
                 };
-                
+                               
+                // Remove undefined properties to avoid sending them to GA4
+                Object.keys(eventParams).forEach(key => eventParams[key] === undefined && delete eventParams[key]);
+
                 gtag('event', 'link_click', eventParams);
                 // No alert needed for user experience
             } else {
